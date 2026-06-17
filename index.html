@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPJ Group - Finansial Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for beautiful charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b',
+                        brandGreen: '#10b981',
+                        brandRed: '#f43f5e',
+                        brandBlue: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Hide scrollbars for ultra-clean mobile feeling */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen font-sans flex flex-col justify-between">
+
+    <!-- MAIN NOTIFICATION ALERT BOX -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-xs w-full pointer-events-none"></div>
+
+    <!-- APP CONTENT CONTAINER -->
+    <div class="flex-1 flex flex-col max-w-md mx-auto w-full bg-slate-950 min-h-screen relative shadow-2xl border-x border-slate-800">
+        
+        <!-- ==================== SCREEN 1: LOGIN SCREEN ==================== -->
+        <div id="screen-login" class="flex-1 flex flex-col justify-center px-6 py-12">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-gradient-to-tr from-emerald-500 to-teal-700 rounded-2xl flex items-center justify-center mx-auto shadow-lg mb-4">
+                    <i class="fa-solid fa-wallet text-white text-4xl"></i>
+                </div>
+                <h1 class="text-2xl font-black tracking-wider text-white">BPJ GROUP</h1>
+                <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest">Sistem Pengeluaran Finansial</p>
+            </div>
+
+            <!-- Login Card -->
+            <div class="bg-darkCard p-6 rounded-2xl shadow-xl border border-slate-800">
+                <h2 class="text-lg font-bold mb-4 text-center text-slate-200">Masuk ke Akun Anda</h2>
+                
+                <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nama Pengguna</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" id="login-username" required placeholder="Masukkan nama..." class="w-full bg-slate-900/80 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">PIN Pengaman</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input type="password" id="login-pin" required placeholder="••••" pattern="[0-9]*" inputmode="numeric" maxlength="8" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-sm text-white tracking-widest focus:outline-none focus:border-emerald-500 transition-colors">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-submit-login" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-emerald-950/40 transition duration-300 flex items-center justify-center gap-2">
+                        <span>MASUK</span>
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="mt-8 text-center text-[10px] text-slate-500">
+                &copy; 2026 BPJ GROUP. Hak Cipta Dilindungi.
+            </div>
+        </div>
+
+
+        <!-- ==================== SCREEN 2: MAIN DASHBOARD ==================== -->
+        <div id="screen-dashboard" class="hidden flex-1 flex flex-col">
+            
+            <!-- Dashboard Header -->
+            <header class="bg-darkCard px-4 py-3 sticky top-0 z-40 border-b border-slate-800 shadow-md">
+                <div class="flex justify-between items-center mb-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white font-black text-sm">B</div>
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-100">BPJ GROUP</h2>
+                            <p class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold" id="header-user-status">Status: ...</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <!-- REAL-TIME AUTOMATIC SYNC STATUS INDICATOR -->
+                        <div id="sync-status-icon" class="hidden items-center gap-1 bg-emerald-950/40 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                            <i class="fa-solid fa-rotate text-[10px] text-emerald-400 animate-spin"></i>
+                            <span class="text-[8px] font-bold text-emerald-400 tracking-wider uppercase">SINKRON</span>
+                        </div>
+                        <button onclick="handleLogout()" title="Keluar" class="w-8 h-8 bg-rose-950/50 hover:bg-rose-900 text-rose-400 rounded-full flex items-center justify-center transition">
+                            <i class="fa-solid fa-sign-out-alt text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sub-menu Switchers -->
+                <div class="flex bg-slate-900 p-1 rounded-xl mt-3 relative">
+                    <button onclick="switchSubMenu('BPJPUSAT')" id="btn-sub-pusat" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition-all duration-300 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-building"></i>
+                        <span>BPJPUSAT</span>
+                    </button>
+                    <button onclick="switchSubMenu('BPJSTUDIO')" id="btn-sub-studio" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition-all duration-300 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-camera-retro"></i>
+                        <span>BPJSTUDIO</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Live DateTime & Active Widget Bar -->
+            <div class="bg-gradient-to-r from-emerald-950/20 via-slate-900 to-teal-950/20 px-4 py-2 border-b border-slate-900 flex justify-between items-center text-xs text-slate-400">
+                <span id="active-sub-label" class="font-extrabold tracking-widest text-emerald-400 text-[10px] uppercase">MEMUAT...</span>
+                <span class="flex items-center gap-1.5">
+                    <i class="fa-regular fa-clock text-emerald-500 animate-pulse"></i>
+                    <span id="live-datetime" class="font-mono text-[11px]">Memuat Waktu...</span>
+                </span>
+            </div>
+
+            <!-- Scrollable Content Area -->
+            <main class="flex-1 p-4 overflow-y-auto no-scrollbar space-y-4">
+                
+                <!-- CARD BALANCES CONTAINER -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- MAIN CAPITAL CARD (Admin can add) -->
+                    <div class="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 relative overflow-hidden group">
+                        <div class="absolute -right-3 -bottom-3 text-slate-800/20 text-5xl font-black">
+                            <i class="fa-solid fa-vault"></i>
+                        </div>
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-[9px] uppercase tracking-wider text-emerald-400 font-extrabold">Saldo Utama</span>
+                            <!-- Admin Add Button -->
+                            <button onclick="openModalAddSaldo()" id="btn-add-saldo" class="hidden text-[10px] bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 font-extrabold px-2 py-0.5 rounded transition">
+                                <i class="fa-solid fa-plus-circle"></i> Top Up
+                            </button>
+                        </div>
+                        <p class="text-sm font-semibold text-slate-400 mt-2">Total Modal</p>
+                        <p class="text-base font-black text-slate-100 mt-0.5 tracking-tight" id="val-saldo-utama">Rp 0</p>
+                    </div>
+
+                    <!-- REMAINING BALANCE CARD -->
+                    <div class="bg-slate-900 p-3.5 rounded-2xl border border-slate-800 relative overflow-hidden">
+                        <div class="absolute -right-3 -bottom-3 text-slate-800/20 text-5xl font-black">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <span class="text-[9px] uppercase tracking-wider text-sky-400 font-extrabold">Sisa Saldo</span>
+                        <p class="text-sm font-semibold text-slate-400 mt-2">Sisa Anggaran</p>
+                        <p class="text-base font-black text-emerald-400 mt-0.5 tracking-tight" id="val-sisa-saldo">Rp 0</p>
+                    </div>
+                </div>
+
+                <!-- ADD EXPENSE TRIGGER BOX -->
+                <button onclick="openModalAddPengeluaran()" class="w-full bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border border-emerald-500/30 hover:border-emerald-500/50 p-4 rounded-2xl flex items-center justify-between transition-all duration-300 group">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition">
+                            <i class="fa-solid fa-file-invoice-dollar text-lg"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="text-xs font-extrabold text-slate-200">Catat Pengeluaran Baru</h4>
+                            <p class="text-[10px] text-slate-400">Masukan data pengeluaran dengan cepat</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:translate-x-1 transition"></i>
+                </button>
+
+                <!-- DYNAMIC GRAPH SUMMARY -->
+                <div class="bg-darkCard p-4 rounded-2xl border border-slate-800">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider"><i class="fa-solid fa-chart-pie mr-1 text-teal-400"></i>Ringkasan Grafik Keuangan</h3>
+                        <span class="text-[9px] text-slate-400" id="graph-sub-label">BPJPUSAT</span>
+                    </div>
+                    <div class="relative w-full h-44 flex items-center justify-center">
+                        <canvas id="finance-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- HISTORY TRANSACTION SECTION -->
+                <div class="bg-darkCard p-4 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider">
+                                <i class="fa-solid fa-receipt mr-1 text-emerald-400"></i> Riwayat Transaksi
+                            </h3>
+                            <button onclick="resetFilters()" class="text-[10px] text-slate-400 hover:text-slate-200 transition">
+                                <i class="fa-solid fa-rotate"></i> Reset
+                            </button>
+                        </div>
+                        
+                        <!-- Date Filter Row -->
+                        <div class="grid grid-cols-2 gap-2 mt-1">
+                            <div>
+                                <label class="block text-[8px] uppercase tracking-wider font-semibold text-slate-400 mb-0.5">Tanggal Mulai</label>
+                                <input type="date" id="filter-start-date" onchange="renderAll()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-[8px] uppercase tracking-wider font-semibold text-slate-400 mb-0.5">Tanggal Akhir</label>
+                                <input type="date" id="filter-end-date" onchange="renderAll()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaction List Container -->
+                    <div class="space-y-2 max-h-80 overflow-y-auto no-scrollbar pr-0.5" id="transaction-list">
+                        <!-- Dynamic render here -->
+                        <div class="text-center py-6 text-slate-500 text-xs">Memuat data transaksi...</div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================== MODALS SECTION ==================== -->
+
+    <!-- MODAL 1: ADD SALDO (ADMIN ONLY) -->
+    <div id="modal-add-saldo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-darkCard w-full max-w-sm rounded-3xl border border-slate-800 overflow-hidden shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-4 flex justify-between items-center text-white">
+                <h3 class="font-extrabold text-sm uppercase tracking-wider"><i class="fa-solid fa-plus-circle mr-1.5"></i>Tambah Saldo Utama</h3>
+                <button onclick="closeModalAddSaldo()" class="text-white hover:text-slate-200 text-lg">&times;</button>
+            </div>
+            
+            <form onsubmit="handleAddSaldoSubmit(event)" class="p-5 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Pilih Sub Menu</label>
+                    <select id="saldo-sub" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        <option value="BPJPUSAT">BPJPUSAT</option>
+                        <option value="BPJSTUDIO">BPJSTUDIO</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Jumlah Saldo (Rp)</label>
+                    <input type="number" id="saldo-nominal" required placeholder="Contoh: 5000000" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Upload Bukti Transaksi</label>
+                    <input type="file" id="saldo-file" accept="image/*" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-emerald-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-emerald-500/20 file:text-emerald-400 cursor-pointer">
+                </div>
+
+                <button type="submit" id="btn-submit-saldo" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-xs">
+                    <span>SIMPAN SALDO</span>
+                    <i class="fa-solid fa-save"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADD PENGELUARAN (ADMIN & PEGAWAI) -->
+    <div id="modal-add-pengeluaran" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-darkCard w-full max-w-sm rounded-3xl border border-slate-800 overflow-hidden shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+            <div class="bg-gradient-to-r from-teal-500 to-emerald-600 px-5 py-4 flex justify-between items-center text-white">
+                <h3 class="font-extrabold text-sm uppercase tracking-wider"><i class="fa-solid fa-file-invoice-dollar mr-1.5"></i>Input Pengeluaran Baru</h3>
+                <button onclick="closeModalAddPengeluaran()" class="text-white hover:text-slate-200 text-lg">&times;</button>
+            </div>
+            
+            <form onsubmit="handleAddPengeluaranSubmit(event)" class="p-5 space-y-3.5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Kategori Pengeluaran</label>
+                    <select id="expense-category" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-teal-500">
+                        <option value="Operasional Kantor">Operasional Kantor</option>
+                        <option value="Gaji Pegawai">Gaji Pegawai</option>
+                        <option value="Peralatan & Hardware">Peralatan & Hardware</option>
+                        <option value="Pemasaran / Iklan">Pemasaran / Iklan</option>
+                        <option value="Sewa & Utilitas">Sewa & Utilitas</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+
+                <div id="manual-keperluan-container">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Tulis Keperluan Secara Manual / Detail</label>
+                    <input type="text" id="expense-manual-keperluan" required placeholder="Tulis detail keperluan secara spesifik..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-teal-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nama Peminta Dana</label>
+                    <input type="text" id="expense-requester" required placeholder="Nama lengkap karyawan..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-teal-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nilai Nominal Biaya (Rp)</label>
+                    <input type="number" id="expense-nominal" required placeholder="Contoh: 150000" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-teal-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Upload Bukti Transaksi/Nota (Opsional)</label>
+                    <input type="file" id="expense-file" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-teal-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-teal-500/20 file:text-teal-400 cursor-pointer">
+                </div>
+
+                <button type="submit" id="btn-submit-expense" class="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-extrabold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-xs">
+                    <span>CATAT PENGELUARAN</span>
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: EDIT PENGELUARAN (ADMIN & PEGAWAI) -->
+    <div id="modal-edit-pengeluaran" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-darkCard w-full max-w-sm rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-5 py-4 flex justify-between items-center text-white">
+                <h3 class="font-extrabold text-sm uppercase tracking-wider"><i class="fa-solid fa-edit mr-1.5"></i>Update Data Pengeluaran</h3>
+                <button onclick="closeModalEdit()" class="text-white hover:text-slate-200 text-lg">&times;</button>
+            </div>
+            
+            <form onsubmit="handleEditSubmit(event)" class="p-5 space-y-4">
+                <input type="hidden" id="edit-id">
+                
+                <div>
+                    <p class="text-xs text-slate-400">Kategori: <strong id="edit-lbl-kategori" class="text-slate-200"></strong></p>
+                    <p class="text-xs text-slate-400">Keperluan: <strong id="edit-lbl-keperluan" class="text-slate-200"></strong></p>
+                    <p class="text-xs text-slate-400">Peminta: <strong id="edit-lbl-peminta" class="text-slate-200"></strong></p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nilai Nominal Biaya Baru (Rp)</label>
+                    <input type="number" id="edit-nominal" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Update Foto Bukti (Bisa Ambil dari Kamera HP / Galeri)</label>
+                    <input type="file" id="edit-file" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-[10px] text-slate-400 focus:outline-none focus:border-blue-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:bg-blue-500/20 file:text-blue-400 cursor-pointer">
+                    <p id="edit-current-photo-link" class="text-[9px] text-blue-400 mt-1 truncate"></p>
+                </div>
+
+                <button type="submit" id="btn-submit-edit" class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-extrabold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-xs">
+                    <span>SIMPAN PERUBAHAN</span>
+                    <i class="fa-solid fa-save"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- SYSTEM LOGIC JAVASCRIPT -->
+    <script>
+        // ==================== CONFIGURATION & STATES ====================
+        let currentSubMenu = "BPJPUSAT"; // BPJPUSAT or BPJSTUDIO
+        let currentUser = null; // Stores login object
+        
+        // Permanently set Google Apps Script URL
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxHgvRSYGU5NAyXSDQmYxq2RXNm7GAQaLoTh5nsWC6PMySclrtoldoFAxT_NvyQXfKH/exec";
+
+        // Application Database Local (Fallback Mockup when GAS is not connected/fails)
+        let db = {
+            login: [
+                { nama: "admin", pin: "1234", status: "admin" },
+                { nama: "pegawai", pin: "5678", status: "pegawai" }
+            ],
+            saldo: [
+                { timestamp: "2026-06-15 08:30:00", sub: "BPJPUSAT", nominal: 15000000, linkFoto: "https://placehold.co/400?text=Bukti+Pusat" },
+                { timestamp: "2026-06-16 10:15:00", sub: "BPJSTUDIO", nominal: 20000000, linkFoto: "https://placehold.co/400?text=Bukti+Studio" }
+            ],
+            pengeluaranPusat: [
+                { timestamp: "2026-06-16 11:20:00", kategori: "Sewa & Utilitas", keperluan: "Bayar Listrik Bulanan", namaPeminta: "Budiman", nominal: 1450000, linkFoto: "https://placehold.co/400?text=Listrik+Pusat" },
+                { timestamp: "2026-06-17 09:00:00", kategori: "Operasional Kantor", keperluan: "Belanja ATK Kantor", namaPeminta: "Reni", nominal: 320000, linkFoto: "https://placehold.co/400?text=ATK+Pusat" }
+            ],
+            pengeluaranStudio: [
+                { timestamp: "2026-06-16 14:00:00", kategori: "Peralatan & Hardware", keperluan: "Kabel HDMI High Speed", namaPeminta: "Rian", nominal: 180000, linkFoto: "https://placehold.co/400?text=Kabel+Studio" },
+                { timestamp: "2026-06-17 10:30:00", kategori: "Gaji Pegawai", keperluan: "Fee Freelance Desainer", namaPeminta: "Siska", nominal: 2500000, linkFoto: "https://placehold.co/400?text=Fee+Studio" }
+            ],
+            log: []
+        };
+
+        // Load db from LocalStorage if offline mock is active (in case of GAS connection issues)
+        const savedDb = localStorage.getItem("BPJ_MOCK_DB");
+        if (savedDb) {
+            db = JSON.parse(savedDb);
+        } else {
+            localStorage.setItem("BPJ_MOCK_DB", JSON.stringify(db));
+        }
+
+        let financeChartInstance = null;
+
+        window.onload = function() {
+            // Setup real-time dynamic date & time
+            setInterval(updateDateTime, 1000);
+            updateDateTime();
+
+            // PULL DATA IMMEDIATELY WHEN APP OPENS
+            fetchFreshData();
+
+            // Auto-relogin check
+            const sessionUser = sessionStorage.getItem("BPJ_USER_SESSION");
+            if (sessionUser) {
+                currentUser = JSON.parse(sessionUser);
+                showDashboard();
+            } else {
+                showLogin();
+            }
+        };
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: false
+            };
+            document.getElementById("live-datetime").innerText = now.toLocaleDateString('id-ID', options);
+        }
+
+        // ==================== NOTIFICATIONS ====================
+        function showToast(message, type = "info") {
+            const container = document.getElementById("toast-container");
+            const toast = document.createElement("div");
+            
+            let bgClass = "bg-slate-800 border-slate-700 text-slate-100";
+            let icon = '<i class="fa-solid fa-info-circle text-sky-400"></i>';
+            if (type === "success") {
+                bgClass = "bg-emerald-950/90 border-emerald-800 text-emerald-200";
+                icon = '<i class="fa-solid fa-check-circle text-emerald-400"></i>';
+            } else if (type === "error") {
+                bgClass = "bg-rose-950/90 border-rose-800 text-rose-200";
+                icon = '<i class="fa-solid fa-triangle-exclamation text-rose-400"></i>';
+            }
+
+            toast.className = `${bgClass} border px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs font-semibold pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0`;
+            toast.innerHTML = `${icon} <span class="flex-1">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+            }, 50);
+
+            // Auto dismiss
+            setTimeout(() => {
+                toast.classList.add("opacity-0", "translate-y-[-10px]");
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // ==================== AUTHENTICATION ====================
+        async function handleLogin(event) {
+            event.preventDefault();
+            const userVal = document.getElementById("login-username").value.trim();
+            const pinVal = document.getElementById("login-pin").value.trim();
+            
+            const btn = document.getElementById("btn-submit-login");
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Memproses...`;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(userVal)}&pin=${encodeURIComponent(pinVal)}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentUser = {
+                        nama: result.user.nama,
+                        status: result.user.status // admin / pegawai
+                    };
+                    sessionStorage.setItem("BPJ_USER_SESSION", JSON.stringify(currentUser));
+                    showToast(`Selamat datang kembali, ${currentUser.nama}!`, "success");
+                    showDashboard();
+                } else {
+                    showToast(result.message || "Nama atau PIN salah!", "error");
+                }
+            } catch (err) {
+                console.error("Online login failed, trying fallback mockup mode:", err);
+                // Fallback mockup mode if offline
+                const userObj = db.login.find(u => u.nama.toLowerCase() === userVal.toLowerCase() && u.pin === pinVal);
+                if (userObj) {
+                    currentUser = {
+                        nama: userObj.nama,
+                        status: userObj.status
+                    };
+                    sessionStorage.setItem("BPJ_USER_SESSION", JSON.stringify(currentUser));
+                    
+                    db.log.push({
+                        timestamp: getFormattedNow(),
+                        nama: currentUser.nama,
+                        aktifitas: "Melakukan login akun (Offline Mode)"
+                    });
+                    saveMockDb();
+
+                    showToast(`Mode Offline: Berhasil masuk sebagai ${currentUser.nama}!`, "success");
+                    showDashboard();
+                } else {
+                    showToast("Nama atau PIN salah! (Gagal menyambung ke server GAS & Akun mockup tidak cocok)", "error");
+                }
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            sessionStorage.removeItem("BPJ_USER_SESSION");
+            showLogin();
+            showToast("Anda telah keluar dari aplikasi.", "info");
+        }
+
+        function showLogin() {
+            document.getElementById("screen-login").classList.remove("hidden");
+            document.getElementById("screen-dashboard").classList.add("hidden");
+        }
+
+        function showDashboard() {
+            document.getElementById("screen-login").classList.add("hidden");
+            document.getElementById("screen-dashboard").classList.remove("hidden");
+            
+            // Render user status header
+            const headerStatus = document.getElementById("header-user-status");
+            headerStatus.innerText = `User: ${currentUser ? currentUser.nama : 'Guest'} (${currentUser ? currentUser.status : ''})`;
+            
+            // Control Admin privileges UI elements
+            const btnAddSaldo = document.getElementById("btn-add-saldo");
+            if (currentUser && currentUser.status === "admin") {
+                btnAddSaldo.classList.remove("hidden");
+            } else {
+                btnAddSaldo.classList.add("hidden");
+            }
+
+            switchSubMenu(currentSubMenu);
+            fetchFreshData();
+        }
+
+        // ==================== NAVIGATION / SWITCHERS ====================
+        function switchSubMenu(subMenu) {
+            currentSubMenu = subMenu;
+            
+            const btnPusat = document.getElementById("btn-sub-pusat");
+            const btnStudio = document.getElementById("btn-sub-studio");
+            const subLabel = document.getElementById("active-sub-label");
+            const graphLabel = document.getElementById("graph-sub-label");
+
+            if (subMenu === "BPJPUSAT") {
+                btnPusat.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950 transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/10";
+                btnStudio.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition-all duration-300 flex items-center justify-center gap-1.5";
+                subLabel.innerText = "BPJPUSAT ACTIVE";
+                subLabel.className = "font-extrabold tracking-widest text-emerald-400 text-[10px] uppercase";
+                graphLabel.innerText = "BPJPUSAT";
+            } else {
+                btnStudio.className = "flex-1 py-2 text-xs font-bold rounded-lg bg-emerald-500 text-slate-950 transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/10";
+                btnPusat.className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition-all duration-300 flex items-center justify-center gap-1.5";
+                subLabel.innerText = "BPJSTUDIO ACTIVE";
+                subLabel.className = "font-extrabold tracking-widest text-emerald-400 text-[10px] uppercase";
+                graphLabel.innerText = "BPJSTUDIO";
+            }
+
+            renderAll();
+        }
+
+        async function fetchFreshData() {
+            const syncIcon = document.getElementById("sync-status-icon");
+            if (syncIcon) {
+                syncIcon.classList.remove("hidden");
+                syncIcon.classList.add("flex");
+            }
+
+            try {
+                const response = await fetch(`${GAS_URL}?action=get_dashboard_data`);
+                const result = await response.json();
+                if (result.success) {
+                    db.saldo = result.saldo;
+                    db.pengeluaranPusat = result.pengeluaranPusat;
+                    db.pengeluaranStudio = result.pengeluaranStudio;
+                    renderAll();
+                    
+                    // Show short success state on sync icon
+                    if (syncIcon) {
+                        setTimeout(() => {
+                            syncIcon.classList.add("hidden");
+                            syncIcon.classList.remove("flex");
+                        }, 1000);
+                    }
+                } else {
+                    showToast("Gagal menyinkronkan data terbaru!", "error");
+                    if (syncIcon) {
+                        syncIcon.classList.add("hidden");
+                        syncIcon.classList.remove("flex");
+                    }
+                }
+            } catch (err) {
+                console.error("Gagal menyinkronkan data. Menampilkan data lokal.", err);
+                renderAll();
+                if (syncIcon) {
+                    syncIcon.classList.add("hidden");
+                    syncIcon.classList.remove("flex");
+                }
+            }
+        }
+
+        // ==================== RENDERING & COMPUTATIONS ====================
+        function renderAll() {
+            // 1. Calculate Balances (Completely Separate BPJPUSAT & BPJSTUDIO Ledger)
+            const totals = calculateBalances();
+            
+            // Update labels
+            document.getElementById("val-saldo-utama").innerText = formatRupiah(totals.saldoUtama);
+            document.getElementById("val-sisa-saldo").innerText = formatRupiah(totals.sisaSaldo);
+            
+            if (totals.sisaSaldo < 0) {
+                document.getElementById("val-sisa-saldo").className = "text-base font-black text-rose-500 mt-0.5 tracking-tight";
+            } else {
+                document.getElementById("val-sisa-saldo").className = "text-base font-black text-emerald-400 mt-0.5 tracking-tight";
+            }
+
+            // 2. Render Charts
+            renderChart(totals.saldoUtama, totals.totalPengeluaran);
+
+            // 3. Render list transactions with filters applied
+            renderTransactionsList();
+        }
+
+        function calculateBalances() {
+            // Sum Saldo Utama specifically filtered by current active sub-menu (Completely Separated)
+            const filteredSaldo = db.saldo.filter(item => item.sub === currentSubMenu);
+            const totalSaldoUtama = filteredSaldo.reduce((sum, item) => sum + Number(item.nominal), 0);
+
+            // Sum Pengeluaran specifically filtered by current active sub-menu
+            const currentPengeluaranList = (currentSubMenu === "BPJPUSAT") ? db.pengeluaranPusat : db.pengeluaranStudio;
+            const totalPengeluaran = currentPengeluaranList.reduce((sum, item) => sum + Number(item.nominal), 0);
+
+            return {
+                saldoUtama: totalSaldoUtama,
+                totalPengeluaran: totalPengeluaran,
+                sisaSaldo: totalSaldoUtama - totalPengeluaran
+            };
+        }
+
+        function renderTransactionsList() {
+            const listContainer = document.getElementById("transaction-list");
+            listContainer.innerHTML = "";
+
+            const filterStart = document.getElementById("filter-start-date").value;
+            const filterEnd = document.getElementById("filter-end-date").value;
+
+            let items = [];
+
+            // 1. Map top-ups
+            const subSaldos = db.saldo.filter(item => item.sub === currentSubMenu);
+            subSaldos.forEach(s => {
+                items.push({
+                    type: "IN",
+                    timestamp: s.timestamp,
+                    kategori: "Top Up Modal",
+                    keperluan: `Penambahan Saldo ${currentSubMenu}`,
+                    peminta: "Admin",
+                    nominal: Number(s.nominal),
+                    linkFoto: s.linkFoto,
+                    raw: s
+                });
+            });
+
+            // 2. Map expenses
+            const subExpenses = (currentSubMenu === "BPJPUSAT") ? db.pengeluaranPusat : db.pengeluaranStudio;
+            subExpenses.forEach((e, idx) => {
+                items.push({
+                    type: "OUT",
+                    id: idx, // Use index for identifying in array
+                    timestamp: e.timestamp,
+                    kategori: e.kategori,
+                    keperluan: e.keperluan,
+                    peminta: e.namaPeminta,
+                    nominal: Number(e.nominal),
+                    linkFoto: e.linkFoto,
+                    raw: e
+                });
+            });
+
+            // Filter date logic
+            if (filterStart) {
+                const start = new Date(filterStart + "T00:00:00");
+                items = items.filter(i => new Date(i.timestamp) >= start);
+            }
+            if (filterEnd) {
+                const end = new Date(filterEnd + "T23:59:59");
+                items = items.filter(i => new Date(i.timestamp) <= end);
+            }
+
+            // Sort newest first
+            items.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            if (items.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-8 text-slate-500 text-xs">
+                        <i class="fa-solid fa-folder-open text-2xl mb-2 block text-slate-600"></i>
+                        Tidak ada transaksi ditemukan pada rentang tanggal ini.
+                    </div>
+                `;
+                return;
+            }
+
+            items.forEach(item => {
+                const card = document.createElement("div");
+                const isIncome = item.type === "IN";
+                
+                let borderCol = isIncome ? "border-l-emerald-500" : "border-l-rose-500";
+                let badgeCol = isIncome ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400";
+                let textSign = isIncome ? "+" : "-";
+
+                let actionHtml = "";
+                if (!isIncome) {
+                    const canEdit = true; 
+                    const canDelete = currentUser && currentUser.status === "admin"; 
+
+                    actionHtml = `
+                        <div class="flex items-center gap-1.5 mt-2 pt-2 border-t border-slate-800">
+                            <button onclick="openModalEdit(${item.id}, '${item.kategori}', '${item.keperluan}', '${item.peminta}', ${item.nominal}, '${item.linkFoto}')" class="text-[10px] text-blue-400 hover:text-blue-300 font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-pen"></i> Update
+                            </button>
+                            ${canDelete ? `
+                                <button onclick="handleDeleteExpense(${item.id})" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold ml-auto flex items-center gap-1">
+                                    <i class="fa-solid fa-trash-can"></i> Hapus
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+
+                const tDate = new Date(item.timestamp);
+                const showDateStr = tDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+                card.className = `bg-slate-900/60 p-3 rounded-xl border-l-4 ${borderCol} border border-slate-800 flex flex-col gap-1.5`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[8px] px-1.5 py-0.5 rounded ${badgeCol} font-bold uppercase tracking-wider">${item.kategori}</span>
+                            <h4 class="text-xs font-bold text-slate-200 mt-1">${item.keperluan}</h4>
+                        </div>
+                        <span class="text-xs font-black ${isIncome ? 'text-emerald-400' : 'text-slate-100'}">${textSign} ${formatRupiah(item.nominal)}</span>
+                    </div>
+
+                    <div class="flex justify-between items-center text-[9px] text-slate-400">
+                        <span>Penerima: <strong class="text-slate-300">${item.peminta}</strong></span>
+                        <span class="font-mono">${showDateStr}</span>
+                    </div>
+
+                    ${item.linkFoto ? `
+                        <div class="mt-1">
+                            <a href="${item.linkFoto}" target="_blank" class="inline-flex items-center gap-1 text-[9px] text-teal-400 hover:underline">
+                                <i class="fa-solid fa-image"></i> Lihat Bukti Transaksi
+                            </a>
+                        </div>
+                    ` : ''}
+
+                    ${actionHtml}
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById("filter-start-date").value = "";
+            document.getElementById("filter-end-date").value = "";
+            renderAll();
+        }
+
+        // ==================== RENDERING CHARTS ====================
+        function renderChart(totalSaldo, totalExpense) {
+            const ctx = document.getElementById('finance-chart').getContext('2d');
+            const sisa = Math.max(0, totalSaldo - totalExpense);
+
+            if (financeChartInstance) {
+                financeChartInstance.destroy();
+            }
+
+            financeChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sisa Saldo', 'Total Pengeluaran'],
+                    datasets: [{
+                        data: [sisa, totalExpense],
+                        backgroundColor: ['#10b981', '#f43f5e'],
+                        borderWidth: 2,
+                        borderColor: '#1e293b'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#cbd5e1',
+                                font: {
+                                    size: 10,
+                                    family: 'sans-serif'
+                                },
+                                padding: 12
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // ==================== TRANSACTIONS ACTIONS ====================
+
+        // 1. ADD SALDO SUBMIT
+        async function handleAddSaldoSubmit(event) {
+            event.preventDefault();
+            if (!currentUser || currentUser.status !== "admin") {
+                showToast("Hanya Admin yang dapat menambahkan saldo utama!", "error");
+                return;
+            }
+
+            const sub = document.getElementById("saldo-sub").value;
+            const nominal = Number(document.getElementById("saldo-nominal").value);
+            const fileInput = document.getElementById("saldo-file");
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showToast("Silakan upload bukti transaksi!", "error");
+                return;
+            }
+
+            const btn = document.getElementById("btn-submit-saldo");
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Memproses Upload...`;
+            btn.disabled = true;
+
+            const base64Data = await convertFileToBase64(file);
+            const timestamp = getFormattedNow();
+
+            try {
+                const payload = {
+                    action: "tambah_saldo",
+                    timestamp: timestamp,
+                    sub: sub,
+                    nominal: nominal,
+                    user: currentUser.nama,
+                    fileName: file.name,
+                    fileMime: file.type,
+                    fileData: base64Data
+                };
+
+                const response = await fetch(GAS_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast("Berhasil menambahkan Saldo Utama (Spreadsheet Terupdate)!", "success");
+                    closeModalAddSaldo();
+                    fetchFreshData();
+                } else {
+                    showToast(result.message || "Gagal menyimpan saldo!", "error");
+                }
+            } catch (err) {
+                console.error("Gagal online, menyimpan cadangan lokal:", err);
+                const mockUrl = URL.createObjectURL(file);
+                db.saldo.push({
+                    timestamp: timestamp,
+                    sub: sub,
+                    nominal: nominal,
+                    linkFoto: mockUrl
+                });
+
+                db.log.push({
+                    timestamp: timestamp,
+                    nama: currentUser.nama,
+                    aktifitas: `Menambah saldo masuk ke ${sub} sebesar ${formatRupiah(nominal)}`
+                });
+
+                saveMockDb();
+                showToast("Disimpan secara lokal karena kendala koneksi server!", "success");
+                closeModalAddSaldo();
+                renderAll();
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        // 2. ADD PENGELUARAN SUBMIT
+        async function handleAddPengeluaranSubmit(event) {
+            event.preventDefault();
+            const categorySelect = document.getElementById("expense-category").value;
+            const keperluan = document.getElementById("expense-manual-keperluan").value.trim();
+
+            const requester = document.getElementById("expense-requester").value.trim();
+            const nominal = Number(document.getElementById("expense-nominal").value);
+            const fileInput = document.getElementById("expense-file");
+            const file = fileInput.files[0];
+
+            const btn = document.getElementById("btn-submit-expense");
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Mengirim Data...`;
+            btn.disabled = true;
+
+            let base64Data = "";
+            let fileName = "";
+            let fileMime = "";
+
+            // File is now optional; only convert if present
+            if (file) {
+                base64Data = await convertFileToBase64(file);
+                fileName = file.name;
+                fileMime = file.type;
+            }
+
+            const timestamp = getFormattedNow();
+
+            try {
+                const payload = {
+                    action: "tambah_pengeluaran",
+                    timestamp: timestamp,
+                    sub: currentSubMenu,
+                    kategori: categorySelect,
+                    keperluan: keperluan,
+                    namaPeminta: requester,
+                    nominal: nominal,
+                    user: currentUser.nama,
+                    fileName: fileName,
+                    fileMime: fileMime,
+                    fileData: base64Data
+                };
+
+                const response = await fetch(GAS_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast("Pengeluaran berhasil dicatat ke Google Sheets!", "success");
+                    closeModalAddPengeluaran();
+                    fetchFreshData();
+                } else {
+                    showToast(result.message || "Gagal mencatat pengeluaran!", "error");
+                }
+            } catch (err) {
+                console.error("Gagal online, menyimpan cadangan lokal:", err);
+                const mockUrl = file ? URL.createObjectURL(file) : "";
+                const targetList = (currentSubMenu === "BPJPUSAT") ? db.pengeluaranPusat : db.pengeluaranStudio;
+                
+                targetList.push({
+                    timestamp: timestamp,
+                    kategori: categorySelect,
+                    keperluan: keperluan,
+                    namaPeminta: requester,
+                    nominal: nominal,
+                    linkFoto: mockUrl
+                });
+
+                db.log.push({
+                    timestamp: timestamp,
+                    nama: currentUser.nama,
+                    aktifitas: `Mencatat pengeluaran ${currentSubMenu}: ${keperluan} sebesar ${formatRupiah(nominal)}`
+                });
+
+                saveMockDb();
+                showToast("Data dicatat secara lokal karena kendala koneksi server!", "success");
+                closeModalAddPengeluaran();
+                renderAll();
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        // 3. EDIT EXPENSE SUBMIT
+        async function handleEditSubmit(event) {
+            event.preventDefault();
+            const id = document.getElementById("edit-id").value;
+            const nominal = Number(document.getElementById("edit-nominal").value);
+            const fileInput = document.getElementById("edit-file");
+            const file = fileInput.files[0];
+
+            const btn = document.getElementById("btn-submit-edit");
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menyimpan Perubahan...`;
+            btn.disabled = true;
+
+            const timestamp = getFormattedNow();
+            let base64Data = "";
+            let fileName = "";
+            let fileMime = "";
+
+            if (file) {
+                base64Data = await convertFileToBase64(file);
+                fileName = file.name;
+                fileMime = file.type;
+            }
+
+            try {
+                const payload = {
+                    action: "edit_pengeluaran",
+                    timestamp: timestamp,
+                    sub: currentSubMenu,
+                    index: Number(id), 
+                    nominal: nominal,
+                    user: currentUser.nama,
+                    fileName: fileName,
+                    fileMime: fileMime,
+                    fileData: base64Data
+                };
+
+                const response = await fetch(GAS_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast("Data pengeluaran berhasil diperbarui!", "success");
+                    closeModalEdit();
+                    fetchFreshData();
+                } else {
+                    showToast(result.message || "Gagal mengupdate pengeluaran!", "error");
+                }
+            } catch (err) {
+                console.error("Gagal online, menyimpan cadangan lokal:", err);
+                const targetList = (currentSubMenu === "BPJPUSAT") ? db.pengeluaranPusat : db.pengeluaranStudio;
+                if (targetList[id]) {
+                    targetList[id].nominal = nominal;
+                    if (file) {
+                        targetList[id].linkFoto = URL.createObjectURL(file);
+                    }
+                    
+                    db.log.push({
+                        timestamp: timestamp,
+                        nama: currentUser.nama,
+                        aktifitas: `Memperbarui pengeluaran ${currentSubMenu} (ID: ${id}) dengan nominal baru ${formatRupiah(nominal)}`
+                    });
+
+                    saveMockDb();
+                    showToast("Perubahan diperbarui secara lokal!", "success");
+                    closeModalEdit();
+                    renderAll();
+                }
+            }
+
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        // 4. DELETE EXPENSE (ADMIN ONLY)
+        async function handleDeleteExpense(id) {
+            if (!currentUser || currentUser.status !== "admin") {
+                showToast("Hanya Admin yang dapat menghapus transaksi!", "error");
+                return;
+            }
+
+            if (!confirm("Apakah Anda yakin ingin menghapus data pengeluaran ini secara permanen?")) {
+                return;
+            }
+
+            const timestamp = getFormattedNow();
+
+            try {
+                const payload = {
+                    action: "hapus_pengeluaran",
+                    timestamp: timestamp,
+                    sub: currentSubMenu,
+                    index: Number(id),
+                    user: currentUser.nama
+                };
+
+                const response = await fetch(GAS_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast("Data pengeluaran berhasil dihapus!", "success");
+                    fetchFreshData();
+                } else {
+                    showToast(result.message || "Gagal menghapus pengeluaran!", "error");
+                }
+            } catch (err) {
+                console.error("Gagal online, memproses hapus secara lokal:", err);
+                const targetList = (currentSubMenu === "BPJPUSAT") ? db.pengeluaranPusat : db.pengeluaranStudio;
+                const deletedItem = targetList.splice(id, 1);
+
+                db.log.push({
+                    timestamp: timestamp,
+                    nama: currentUser.nama,
+                    aktifitas: `Menghapus pengeluaran ${currentSubMenu}: ${deletedItem[0]?.keperluan || ''}`
+                });
+
+                saveMockDb();
+                showToast("Data dihapus secara lokal!", "success");
+                renderAll();
+            }
+        }
+
+
+        // ==================== MODAL TOGGLES ====================
+        function openModalAddSaldo() {
+            document.getElementById("modal-add-saldo").classList.remove("hidden");
+            document.getElementById("modal-add-saldo").classList.add("flex");
+            document.getElementById("saldo-sub").value = currentSubMenu;
+        }
+
+        function closeModalAddSaldo() {
+            document.getElementById("modal-add-saldo").classList.add("hidden");
+            document.getElementById("modal-add-saldo").classList.remove("flex");
+            document.getElementById("saldo-nominal").value = "";
+            document.getElementById("saldo-file").value = "";
+        }
+
+        function openModalAddPengeluaran() {
+            document.getElementById("modal-add-pengeluaran").classList.remove("hidden");
+            document.getElementById("modal-add-pengeluaran").classList.add("flex");
+        }
+
+        function closeModalAddPengeluaran() {
+            document.getElementById("modal-add-pengeluaran").classList.add("hidden");
+            document.getElementById("modal-add-pengeluaran").classList.remove("flex");
+            document.getElementById("expense-category").selectedIndex = 0;
+            document.getElementById("expense-manual-keperluan").value = "";
+            document.getElementById("expense-requester").value = "";
+            document.getElementById("expense-nominal").value = "";
+            document.getElementById("expense-file").value = "";
+        }
+
+        function openModalEdit(id, kategori, keperluan, peminta, nominal, currentPhotoLink) {
+            document.getElementById("modal-edit-pengeluaran").classList.remove("hidden");
+            document.getElementById("modal-edit-pengeluaran").classList.add("flex");
+
+            document.getElementById("edit-id").value = id;
+            document.getElementById("edit-lbl-kategori").innerText = kategori;
+            document.getElementById("edit-lbl-keperluan").innerText = keperluan;
+            document.getElementById("edit-lbl-peminta").innerText = peminta;
+            document.getElementById("edit-nominal").value = nominal;
+            document.getElementById("edit-file").value = "";
+
+            const currentPhotoText = document.getElementById("edit-current-photo-link");
+            if (currentPhotoLink) {
+                currentPhotoText.innerHTML = `<a href="${currentPhotoLink}" target="_blank" class="hover:underline">Buka Bukti Saat Ini &rarr;</a>`;
+            } else {
+                currentPhotoText.innerText = "Tidak ada bukti foto saat ini";
+            }
+        }
+
+        function closeModalEdit() {
+            document.getElementById("modal-edit-pengeluaran").classList.add("hidden");
+            document.getElementById("modal-edit-pengeluaran").classList.remove("flex");
+        }
+
+        function toggleCategoryInput() {
+            const cat = document.getElementById("expense-category").value;
+            const container = document.getElementById("manual-keperluan-container");
+            if (cat === "Lainnya") {
+                container.classList.remove("hidden");
+                document.getElementById("expense-manual-keperluan").required = true;
+            } else {
+                container.classList.add("hidden");
+                document.getElementById("expense-manual-keperluan").required = false;
+            }
+        }
+
+        // ==================== UTILITY FUNCTIONS ====================
+        function convertFileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function formatRupiah(num) {
+            return 'Rp ' + Number(num).toLocaleString('id-ID');
+        }
+
+        function getFormattedNow() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const sec = String(now.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hour}:${min}:${sec}`;
+        }
+
+        function saveMockDb() {
+            localStorage.setItem("BPJ_MOCK_DB", JSON.stringify(db));
+        }
+    </script>
+</body>
+</html>
