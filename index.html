@@ -204,9 +204,14 @@
                             <h3 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider">
                                 <i class="fa-solid fa-receipt mr-1 text-emerald-400"></i> Riwayat Transaksi
                             </h3>
-                            <button onclick="resetFilters()" class="text-[10px] text-slate-400 hover:text-slate-200 transition">
-                                <i class="fa-solid fa-rotate"></i> Reset
-                            </button>
+                            <div class="flex gap-2">
+                                <button onclick="openModalExport()" class="text-[10px] text-blue-400 hover:text-blue-200 transition bg-blue-500/10 px-2 py-1 rounded flex items-center gap-1">
+                                    <i class="fa-solid fa-file-word"></i> Export
+                                </button>
+                                <button onclick="resetFilters()" class="text-[10px] text-slate-400 hover:text-slate-200 transition px-2 py-1">
+                                    <i class="fa-solid fa-rotate"></i> Reset
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- Date Filter Row -->
@@ -355,6 +360,29 @@
         </div>
     </div>
 
+    <!-- MODAL 4: EXPORT WORD -->
+    <div id="modal-export" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-darkCard w-full max-w-sm rounded-3xl border border-slate-800 overflow-hidden shadow-2xl">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-5 py-4 flex justify-between items-center text-white">
+                <h3 class="font-extrabold text-sm uppercase tracking-wider"><i class="fa-solid fa-file-word mr-1.5"></i>Export ke MS Word</h3>
+                <button onclick="closeModalExport()" class="text-white hover:text-slate-200 text-lg">&times;</button>
+            </div>
+            
+            <div class="p-5 space-y-4">
+                <p class="text-xs text-slate-400">Silakan pilih periode bulan laporan untuk <strong class="text-blue-400" id="export-sub-label">...</strong>.</p>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Periode Bulan</label>
+                    <input type="month" id="export-month" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+
+                <button onclick="doExportWord()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-extrabold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-xs">
+                    <span>DOWNLOAD FILE (.DOC)</span>
+                    <i class="fa-solid fa-download"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- SYSTEM LOGIC JAVASCRIPT -->
     <script>
@@ -1166,6 +1194,192 @@
         function closeModalEdit() {
             document.getElementById("modal-edit-pengeluaran").classList.add("hidden");
             document.getElementById("modal-edit-pengeluaran").classList.remove("flex");
+        }
+
+        function openModalExport() {
+            document.getElementById('modal-export').classList.remove('hidden');
+            document.getElementById('modal-export').classList.add('flex');
+            document.getElementById('export-sub-label').innerText = currentSubMenu;
+            
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            document.getElementById('export-month').value = `${y}-${m}`;
+        }
+
+        function closeModalExport() {
+            document.getElementById('modal-export').classList.add('hidden');
+            document.getElementById('modal-export').classList.remove('flex');
+        }
+
+        function doExportWord() {
+            const monthVal = document.getElementById('export-month').value;
+            if (!monthVal) {
+                showToast("Pilih bulan terlebih dahulu!", "error");
+                return;
+            }
+
+            const [year, month] = monthVal.split('-');
+            const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const monthName = monthNames[parseInt(month) - 1];
+
+            let items = [];
+            const subSaldos = db.saldo.filter(item => item.sub === currentSubMenu);
+            subSaldos.forEach(s => items.push({ type: "IN", ...s, peminta: "Admin", keperluan: "Top Up Saldo Utama", kategori: "Top Up" }));
+            
+            const subExpenses = (currentSubMenu === "BPJPUSAT") ? db.pengeluaranPusat : db.pengeluaranStudio;
+            subExpenses.forEach(e => items.push({ type: "OUT", ...e }));
+
+            // Filter by selected month
+            const filteredItems = items.filter(item => {
+                const d = new Date(item.timestamp);
+                return d.getFullYear() == year && (d.getMonth() + 1) == month;
+            });
+
+            // Sort ascending for report
+            filteredItems.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+            let periodIn = 0;
+            let periodOut = 0;
+            let rowsHtml = '';
+
+            if (filteredItems.length === 0) {
+                rowsHtml = `<tr><td colspan="6" style="text-align:center; padding:15px; color:#555;">Tidak ada transaksi pada periode ini.</td></tr>`;
+            } else {
+                filteredItems.forEach((item) => {
+                    if (item.type === 'IN') periodIn += Number(item.nominal);
+                    else periodOut += Number(item.nominal);
+
+                    const tDate = new Date(item.timestamp);
+                    const dateStr = `${tDate.getDate().toString().padStart(2,'0')}/${(tDate.getMonth()+1).toString().padStart(2,'0')}/${tDate.getFullYear()}`;
+                    
+                    let imgHtml = "<span style='color: #999; font-size: 8pt;'>Tidak ada bukti</span>";
+                    if (item.linkFoto) {
+                        let src = item.linkFoto;
+                        if (!src.startsWith('http') && !src.startsWith('data:') && !src.startsWith('blob:')) {
+                            src = 'data:image/jpeg;base64,' + src;
+                        } else if (src.includes('drive.google.com')) {
+                            // Konversi link Google Drive viewer menjadi direct image link
+                            let fileId = "";
+                            const match1 = src.match(/\/file\/d\/([^\/]+)/);
+                            const match2 = src.match(/id=([^&]+)/);
+                            
+                            if (match1) fileId = match1[1];
+                            else if (match2) fileId = match2[1];
+                            
+                            if (fileId) {
+                                src = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                            }
+                        }
+                        
+                        // MS Word membutuhkan atribut width dan height eksplisit pada tag img
+                        imgHtml = `<img src="${src}" width="80" height="80" alt="Bukti"/>`;
+                    }
+
+                    const isOut = item.type === 'OUT';
+                    const nominalStr = (isOut ? "- " : "+ ") + formatRupiah(item.nominal);
+                    const color = isOut ? "color: #dc2626;" : "color: #16a34a;";
+
+                    rowsHtml += `
+                        <tr>
+                            <td style="padding: 8px; text-align: center; font-size: 9pt;">${dateStr}</td>
+                            <td style="padding: 8px; text-align: center; font-size: 9pt;">${item.kategori || '-'}</td>
+                            <td style="padding: 8px; font-size: 9pt;">${item.keperluan}</td>
+                            <td style="padding: 8px; text-align: center; font-size: 9pt;">${item.peminta || item.namaPeminta || '-'}</td>
+                            <td style="padding: 8px; text-align: right; ${color} font-size: 9pt;"><strong>${nominalStr}</strong></td>
+                            <td style="padding: 8px; text-align: center;">${imgHtml}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const sisa = periodIn - periodOut;
+
+            const htmlContent = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset='utf-8'>
+                <title>Laporan Keuangan</title>
+                <style>
+                    body { font-family: 'Arial', sans-serif; font-size: 10pt; color: #000; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                    th, td { border: 1px solid #333; padding: 6px; vertical-align: middle; }
+                    th { background-color: #f3f4f6; font-weight: bold; text-align: center; font-size: 10pt;}
+                    .kop-surat { text-align: center; border-bottom: 3px double #000; padding-bottom: 15px; margin-bottom: 20px; }
+                    .kop-surat h1 { margin: 0; font-size: 22pt; font-weight: bold; letter-spacing: 2px; }
+                    .kop-surat h2 { margin: 5px 0 0 0; font-size: 14pt; color: #333; }
+                    .kop-surat p { margin: 5px 0 0 0; font-size: 9pt; font-style: italic; color: #555; }
+                    .text-right { text-align: right; }
+                </style>
+            </head>
+            <body>
+                <div class="kop-surat">
+                    <h1>BPJ GROUP</h1>
+                    <h2>Laporan Keuangan Cabang ${currentSubMenu}</h2>
+                    <p>Sistem Pengeluaran Finansial Terpadu &bull; Dicetak pada: ${new Date().toLocaleDateString('id-ID')}</p>
+                </div>
+                
+                <h3 style="text-align: center; text-decoration: underline; margin-bottom: 20px;">REKAPITULASI PERIODE: ${monthName.toUpperCase()} ${year}</h3>
+                
+                <table style="width: 60%; margin: 0 auto 30px auto;">
+                    <tr>
+                        <td style="font-weight: bold; width: 60%; padding: 8px;">Total Saldo Masuk</td>
+                        <td class="text-right" style="color: #16a34a; font-weight: bold; padding: 8px;">${formatRupiah(periodIn)}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; padding: 8px;">Total Pengeluaran</td>
+                        <td class="text-right" style="color: #dc2626; font-weight: bold; padding: 8px;">${formatRupiah(periodOut)}</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold; background-color: #f3f4f6; padding: 8px;">Sisa Saldo Periode</td>
+                        <td class="text-right" style="font-weight: bold; background-color: #f3f4f6; padding: 8px;">${formatRupiah(sisa)}</td>
+                    </tr>
+                </table>
+
+                <h4 style="margin-bottom: 10px;">Detail Transaksi:</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="12%">Tanggal</th>
+                            <th width="15%">Kategori</th>
+                            <th width="23%">Keperluan</th>
+                            <th width="15%">Peminta</th>
+                            <th width="15%">Nominal</th>
+                            <th width="20%">Bukti Foto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+                
+                <br>
+                <table style="border: none; width: 100%; margin-top: 40px;">
+                    <tr style="border: none;">
+                        <td style="border: none; width: 65%;"></td>
+                        <td style="border: none; width: 35%; text-align: center;">
+                            <p style="margin: 0;">Surakarta, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                            <br><br><br><br><br>
+                            <p style="margin: 0; text-decoration: underline;"><strong>( ________________________ )</strong></p>
+                            <p style="margin: 5px 0 0 0;">Mengetahui / Admin</p>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+            `;
+
+            const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Laporan_Keuangan_${currentSubMenu}_${monthName}_${year}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast("Laporan Word berhasil diunduh!", "success");
+            closeModalExport();
         }
 
         function toggleCategoryInput() {
