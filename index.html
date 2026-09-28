@@ -134,6 +134,9 @@
                             <i class="fa-solid fa-rotate text-[10px] text-emerald-400 animate-spin"></i>
                             <span class="text-[8px] font-bold text-emerald-400 tracking-wider uppercase">SINKRON</span>
                         </div>
+                        <button onclick="openSettings()" id="btn-settings" title="Pengaturan & Kode GAS" class="hidden w-8 h-8 bg-sky-950/50 hover:bg-sky-900 text-sky-400 rounded-full flex items-center justify-center transition">
+                            <i class="fa-solid fa-gear text-xs"></i>
+                        </button>
                         <button onclick="handleLogout()" title="Keluar" class="w-8 h-8 bg-rose-950/50 hover:bg-rose-900 text-rose-400 rounded-full flex items-center justify-center transition">
                             <i class="fa-solid fa-sign-out-alt text-xs"></i>
                         </button>
@@ -422,6 +425,85 @@
         </div>
     </div>
 
+
+    <!-- ==================== MODAL 5: SETTING & GENERATOR KODE GAS ==================== -->
+    <div id="modal-settings" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[70] hidden items-center justify-center p-2 sm:p-4">
+        <div class="bg-slate-900 w-full max-w-5xl h-[95vh] rounded-2xl border border-slate-700 flex flex-col shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-sky-600 to-indigo-700 px-5 py-4 flex justify-between items-center text-white shrink-0">
+                <div>
+                    <h3 class="font-extrabold text-sm uppercase tracking-wider"><i class="fa-solid fa-gear mr-1.5"></i>Setting Sistem & Generator Kode GAS</h3>
+                    <p class="text-[9px] text-sky-100 mt-1">Konfigurasi database dan hasilkan backend Google Apps Script sesuai seluruh fungsi aplikasi.</p>
+                </div>
+                <button onclick="closeSettings()" class="text-white hover:text-slate-200 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-2xl p-4">
+                        <h4 class="text-xs font-extrabold text-sky-400 uppercase tracking-wider mb-3">Koneksi Google</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">URL Web App GAS (/exec)</label>
+                                <input id="setting-gas-url" type="url" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white" placeholder="https://script.google.com/macros/s/.../exec">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Link Google Spreadsheet</label>
+                                <input id="setting-spreadsheet-link" type="url" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Link Folder Google Drive</label>
+                                <input id="setting-drive-link" type="url" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800/70 border border-slate-700 rounded-2xl p-4">
+                        <h4 class="text-xs font-extrabold text-emerald-400 uppercase tracking-wider mb-3">ID Database</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Spreadsheet ID</label>
+                                <input id="setting-spreadsheet-id" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Google Drive Folder ID</label>
+                                <input id="setting-drive-id" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono">
+                            </div>
+                            <p class="text-[9px] text-slate-500">ID otomatis dapat diambil dari link Spreadsheet/Drive. Jika link diubah, klik "Ambil ID dari Link".</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="extractSettingIds()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-2 rounded-xl text-[10px] font-bold">
+                        <i class="fa-solid fa-link mr-1"></i> Ambil ID dari Link
+                    </button>
+                    <button onclick="saveSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-[10px] font-bold">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Setting
+                    </button>
+                    <button onclick="generateGasCode()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-xl text-[10px] font-bold">
+                        <i class="fa-solid fa-code mr-1"></i> Generate Kode GAS Lengkap
+                    </button>
+                    <button onclick="copyGasCode()" class="bg-sky-600 hover:bg-sky-700 text-white px-3 py-2 rounded-xl text-[10px] font-bold">
+                        <i class="fa-solid fa-copy mr-1"></i> Salin Kode GAS
+                    </button>
+                </div>
+
+                <div class="bg-amber-950/30 border border-amber-800/50 rounded-2xl p-4 text-[10px] text-amber-200 leading-relaxed">
+                    <strong class="text-amber-300">Catatan deployment:</strong>
+                    kode yang dibuat mencakup login, pembacaan dashboard, tambah saldo, tambah pengeluaran, edit pengeluaran,
+                    hapus pengeluaran, upload bukti ke Google Drive, serta pembuatan sheet/header yang diperlukan.
+                    Setelah ditempel ke Apps Script: <strong>Deploy → New deployment → Web app → Execute as Me → Who has access: Anyone</strong>.
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-xs font-extrabold text-slate-200 uppercase tracking-wider">Kode Google Apps Script</h4>
+                        <span id="gas-code-status" class="text-[9px] text-slate-500">Belum dibuat</span>
+                    </div>
+                    <textarea id="gas-code-output" spellcheck="false" class="w-full h-[420px] bg-slate-950 border border-slate-700 rounded-2xl p-4 text-[10px] leading-relaxed text-emerald-300 font-mono resize-none" placeholder="Klik Generate Kode GAS Lengkap..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- PRINT CONTAINER (Hidden in UI, Used for window.print) -->
     <div id="print-area" class="hidden"></div>
 
@@ -433,6 +515,14 @@
         
         // Permanently set Google Apps Script URL
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxHgvRSYGU5NAyXSDQmYxq2RXNm7GAQaLoTh5nsWC6PMySclrtoldoFAxT_NvyQXfKH/exec";
+        const DEFAULT_SPREADSHEET_LINK = "https://docs.google.com/spreadsheets/d/1aL9tVxVNiNPfsx9xoBKME3dKVBMDEi09N466SyfrDTs/edit?usp=sharing";
+        const DEFAULT_DRIVE_LINK = "https://drive.google.com/drive/folders/1C8cRQCWXtelCwOkvBuWPvmfkJAlWFach?usp=sharing";
+        const DEFAULT_SPREADSHEET_ID = "1aL9tVxVNiNPfsx9xoBKME3dKVBMDEi09N466SyfrDTs";
+        const DEFAULT_DRIVE_ID = "1C8cRQCWXtelCwOkvBuWPvmfkJAlWFach";
+        function getGasUrl() {
+            const cfg = getAppSettings();
+            return (cfg.gasUrl || GAS_URL).trim();
+        }
 
         // Application Database Local (Fallback Mockup when GAS is not connected/fails)
         let db = {
@@ -542,7 +632,7 @@
             btn.disabled = true;
 
             try {
-                const response = await fetch(`${GAS_URL}?action=login&username=${encodeURIComponent(userVal)}&pin=${encodeURIComponent(pinVal)}`);
+                const response = await fetch(`${getGasUrl()}?action=login&username=${encodeURIComponent(userVal)}&pin=${encodeURIComponent(pinVal)}`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -607,10 +697,13 @@
             
             // Control Admin privileges UI elements
             const btnAddSaldo = document.getElementById("btn-add-saldo");
+            const btnSettings = document.getElementById("btn-settings");
             if (currentUser && currentUser.status === "admin") {
                 btnAddSaldo.classList.remove("hidden");
+                if (btnSettings) btnSettings.classList.remove("hidden");
             } else {
                 btnAddSaldo.classList.add("hidden");
+                if (btnSettings) btnSettings.classList.add("hidden");
             }
 
             switchSubMenu(currentSubMenu);
@@ -651,7 +744,7 @@
             }
 
             try {
-                const response = await fetch(`${GAS_URL}?action=get_dashboard_data`);
+                const response = await fetch(`${getGasUrl()}?action=get_dashboard_data`);
                 const result = await response.json();
                 if (result.success) {
                     db.saldo = result.saldo;
@@ -930,7 +1023,7 @@
                     fileData: base64Data
                 };
 
-                const response = await fetch(GAS_URL, {
+                const response = await fetch(getGasUrl(), {
                     method: "POST",
                     body: JSON.stringify(payload)
                 });
@@ -1013,7 +1106,7 @@
                     fileData: base64Data
                 };
 
-                const response = await fetch(GAS_URL, {
+                const response = await fetch(getGasUrl(), {
                     method: "POST",
                     body: JSON.stringify(payload)
                 });
@@ -1093,7 +1186,7 @@
                     fileData: base64Data
                 };
 
-                const response = await fetch(GAS_URL, {
+                const response = await fetch(getGasUrl(), {
                     method: "POST",
                     body: JSON.stringify(payload)
                 });
@@ -1154,7 +1247,7 @@
                     user: currentUser.nama
                 };
 
-                const response = await fetch(GAS_URL, {
+                const response = await fetch(getGasUrl(), {
                     method: "POST",
                     body: JSON.stringify(payload)
                 });
@@ -1272,194 +1365,215 @@
                 showToast("Harap pilih tanggal mulai dan tanggal akhir!", "error");
                 return;
             }
+            if (startVal > endVal) {
+                showToast("Tanggal mulai tidak boleh melebihi tanggal akhir!", "error");
+                return;
+            }
 
             const startObj = new Date(startVal + "T00:00:00");
             const endObj = new Date(endVal + "T23:59:59");
 
-            let items = [];
-            
-            // Ambil data top up saldo
-            const subSaldos = db.saldo.filter(item => item.sub === currentSubMenu);
-            subSaldos.forEach(s => items.push({ type: "IN", ...s, peminta: "Admin", keperluan: "Top Up Modal Utama", kategori: "Pemasukan Modal" }));
-            
-            // Ambil data pengeluaran
-            const subExpenses = (currentSubMenu === "BPJPUSAT") ? db.pengeluaranPusat : db.pengeluaranStudio;
-            subExpenses.forEach(e => items.push({ type: "OUT", ...e }));
+            // Data saldo masuk dan pengeluaran dipisahkan agar rincian laporan mudah dibaca.
+            const subSaldos = db.saldo
+                .filter(item => item.sub === currentSubMenu)
+                .map(s => ({
+                    type: "IN",
+                    ...s,
+                    peminta: s.peminta || s.namaPeminta || "Admin",
+                    keperluan: s.keperluan || `Penambahan Saldo ${currentSubMenu}`,
+                    kategori: s.kategori || "Top Up Modal"
+                }));
 
-            // Filter by date range
-            const filteredItems = items.filter(item => {
-                const d = new Date(item.timestamp);
+            const subExpenses = (currentSubMenu === "BPJPUSAT" ? db.pengeluaranPusat : db.pengeluaranStudio)
+                .map(e => ({
+                    type: "OUT",
+                    ...e,
+                    peminta: e.namaPeminta || e.peminta || "-"
+                }));
+
+            // Saldo sebelumnya = seluruh saldo masuk sebelum periode - seluruh pengeluaran sebelum periode.
+            const saldoMasukSebelum = subSaldos
+                .filter(x => new Date(x.timestamp) < startObj)
+                .reduce((sum, x) => sum + Number(x.nominal || 0), 0);
+            const pengeluaranSebelum = subExpenses
+                .filter(x => new Date(x.timestamp) < startObj)
+                .reduce((sum, x) => sum + Number(x.nominal || 0), 0);
+            const saldoSebelumnya = saldoMasukSebelum - pengeluaranSebelum;
+
+            // Hanya transaksi dalam periode terpilih yang masuk ke rincian laporan.
+            const saldoBaruPeriode = subSaldos.filter(x => {
+                const d = new Date(x.timestamp);
+                return d >= startObj && d <= endObj;
+            });
+            const pengeluaranPeriode = subExpenses.filter(x => {
+                const d = new Date(x.timestamp);
                 return d >= startObj && d <= endObj;
             });
 
-            // Urutkan berdasarkan waktu (lama ke baru)
-            filteredItems.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const totalSaldoBaru = saldoBaruPeriode.reduce((sum, x) => sum + Number(x.nominal || 0), 0);
+            const totalPengeluaranPeriode = pengeluaranPeriode.reduce((sum, x) => sum + Number(x.nominal || 0), 0);
+            const saldoAkhir = saldoSebelumnya + totalSaldoBaru - totalPengeluaranPeriode;
 
-            let totalIn = 0;
-            let totalOut = 0;
-            let tbodyHtml = '';
-            let attachmentsHtml = ''; // Penampung HTML untuk halaman lampiran bukti
+            const filteredItems = [...saldoBaruPeriode, ...pengeluaranPeriode]
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-            if (filteredItems.length === 0) {
-                tbodyHtml = `<tr><td colspan="7" class="text-center py-8 text-gray-500 italic">Tidak ada transaksi pada rentang tanggal ini.</td></tr>`;
-            } else {
-                let attachmentCount = 1;
-                filteredItems.forEach((item, index) => {
-                    if (item.type === 'IN') totalIn += Number(item.nominal);
-                    else totalOut += Number(item.nominal);
+            let detailRowsHtml = '';
+            let attachmentsHtml = '';
+            let attachmentCount = 1;
 
-                    const tDate = new Date(item.timestamp);
-                    const dateStr = tDate.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-                    
-                    let imgHtml = "<span class='text-gray-400 text-xs italic'>Tidak ada</span>";
-                    if (item.linkFoto) {
-                        let src = item.linkFoto;
-                        let originalLink = item.linkFoto;
+            filteredItems.forEach((item, index) => {
+                const isOut = item.type === 'OUT';
+                const sign = isOut ? '-' : '+';
+                const colorClass = isOut ? 'text-red-600' : 'text-green-600';
+                const rowBg = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                const tDate = new Date(item.timestamp);
+                const dateStr = tDate.toLocaleDateString('id-ID', {
+                    day: '2-digit', month: 'short', year: 'numeric'
+                });
+                const timeStr = tDate.toLocaleTimeString('id-ID', {
+                    hour: '2-digit', minute: '2-digit'
+                });
 
-                        if (!src.startsWith('http') && !src.startsWith('data:') && !src.startsWith('blob:')) {
-                            src = 'data:image/jpeg;base64,' + src;
-                        } else if (src.includes('drive.google.com')) {
-                            // Ekstrak ID File Drive menggunakan regex yang lebih handal
-                            const match = src.match(/[-\w]{25,}/);
-                            if (match) {
-                                let fileId = match[0];
-                                // Menggunakan endpoint thumbnail Google Drive yang jauh lebih andal untuk merender tag <img> langsung
-                                src = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`;
-                            }
-                        }
-                        
-                        // Text rujukan di tabel utama
-                        imgHtml = `<span class="text-[10px] text-blue-700 font-bold bg-blue-100 px-1.5 py-0.5 rounded whitespace-nowrap">Lampiran ${attachmentCount}</span>`;
-                        
-                        // Generate halaman lampiran ukuran penuh
-                        attachmentsHtml += `
-                            <div class="page-break pt-12 mt-12 border-t-2 border-dashed border-gray-400">
-                                <div class="mb-6 border-b-2 border-gray-800 pb-2">
-                                    <h3 class="text-2xl font-black text-gray-900 uppercase tracking-wide">Lampiran ${attachmentCount}</h3>
-                                    <p class="text-sm font-bold text-gray-600">Detail & Bukti Transaksi - ${currentSubMenu}</p>
-                                </div>
-                                
-                                <table class="w-full max-w-2xl mb-6 text-sm border-collapse bg-white shadow-sm border border-gray-300">
-                                    <tr>
-                                        <td class="border border-gray-300 px-4 py-2 font-bold text-gray-700 w-1/3 bg-gray-100">Tanggal</td>
-                                        <td class="border border-gray-300 px-4 py-2 font-semibold text-gray-900">${dateStr}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300 px-4 py-2 font-bold text-gray-700 bg-gray-100">Kategori / Tipe</td>
-                                        <td class="border border-gray-300 px-4 py-2 font-semibold text-gray-900">${item.kategori || 'Pemasukan Modal'} <span class="ml-2 text-xs text-white px-2 py-0.5 rounded ${item.type === 'IN' ? 'bg-green-500' : 'bg-red-500'}">${item.type}</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300 px-4 py-2 font-bold text-gray-700 bg-gray-100">Keperluan</td>
-                                        <td class="border border-gray-300 px-4 py-2 font-semibold text-gray-900">${item.keperluan}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300 px-4 py-2 font-bold text-gray-700 bg-gray-100">Nilai Nominal (Rp)</td>
-                                        <td class="border border-gray-300 px-4 py-2 font-black text-gray-900 text-lg">${formatRupiah(item.nominal)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300 px-4 py-2 font-bold text-gray-700 bg-gray-100">Oleh (PIC)</td>
-                                        <td class="border border-gray-300 px-4 py-2 font-semibold text-gray-900">${item.peminta || item.namaPeminta || 'Admin'}</td>
-                                    </tr>
-                                </table>
-                                
-                                <h4 class="font-bold text-sm text-gray-800 mb-2">Foto / Nota Bukti:</h4>
-                                <div class="w-full flex flex-col justify-center items-center bg-gray-100 border-2 border-gray-300 rounded p-4">
-                                    <!-- Gambar Utama -->
-                                    <img src="${src}" class="max-w-full object-contain bg-white shadow-sm border border-gray-200" style="max-height: 700px;" alt="Bukti Lampiran ${attachmentCount}" onerror="this.onerror=null; this.src='https://placehold.co/800x400/eeeeee/a3a3a3?text=Gagal+Memuat+Pratinjau+Gambar+Drive'; this.classList.add('opacity-80');"/>
-                                    
-                                    <!-- Tombol Link Alternatif (Fallback jika browser memblokir gambar Drive saat print) -->
-                                    <div class="mt-4 flex gap-3 w-full justify-center" data-html2canvas-ignore>
-                                        <a href="${originalLink}" target="_blank" class="text-xs font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 border border-blue-200">
-                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Bukti Asli di Tab Baru
-                                        </a>
-                                    </div>
-                                    <p class="text-[10px] text-gray-500 mt-2 italic text-center">Catatan: Jika dokumen diatur privat, klik tombol di atas untuk memastikan gambar terbuka.</p>
-                                </div>
-                            </div>
-                        `;
-                        attachmentCount++;
+                let photoHtml = `<span class="text-[10px] text-gray-400 italic">Tidak ada bukti</span>`;
+                if (item.linkFoto) {
+                    let src = item.linkFoto;
+                    const originalLink = item.linkFoto;
+                    if (!src.startsWith('http') && !src.startsWith('data:') && !src.startsWith('blob:')) {
+                        src = 'data:image/jpeg;base64,' + src;
+                    } else if (src.includes('drive.google.com')) {
+                        const match = src.match(/(?:id=|\/d\/|\/file\/d\/)([-\w]{20,})/);
+                        if (match) src = `https://drive.google.com/uc?export=view&id=${match[1]}`;
                     }
 
-                    const isOut = item.type === 'OUT';
-                    const sign = isOut ? "-" : "+";
-                    const colorClass = isOut ? "text-red-600" : "text-green-600";
-                    const rowBg = index % 2 === 0 ? "bg-white" : "bg-gray-50";
+                    photoHtml = `
+                        <div class="flex flex-col items-center gap-1">
+                            <img src="${src}" class="w-16 h-16 object-cover rounded border border-gray-300 bg-gray-100 shadow-sm" alt="Bukti ${attachmentCount}" loading="eager" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='https://drive.google.com/thumbnail?id=${(item.linkFoto.match(/(?:id=|\/d\/|\/file\/d\/)([-\w]{20,})/)||[])[1]||''}&sz=w1000';}else{this.onerror=null;this.style.display='none';this.nextElementSibling.classList.remove('hidden');}">
+                            <span class="hidden text-[9px] text-gray-400 italic">Foto gagal dimuat</span>
+                            <span class="text-[9px] text-blue-700 font-bold">Lampiran ${attachmentCount}</span>
+                        </div>`;
 
-                    tbodyHtml += `
-                        <tr class="${rowBg}">
-                            <td class="border border-gray-300 px-2 py-2 text-xs align-middle text-center">${dateStr}</td>
-                            <td class="border border-gray-300 px-2 py-2 text-xs align-middle text-center font-bold ${colorClass}">${item.type}</td>
-                            <td class="border border-gray-300 px-2 py-2 text-xs align-middle">${item.kategori || '-'}</td>
-                            <td class="border border-gray-300 px-2 py-2 text-xs align-middle">${item.keperluan}</td>
-                            <td class="border border-gray-300 px-2 py-2 text-xs align-middle text-center">${item.peminta || item.namaPeminta || '-'}</td>
-                            <td class="border border-gray-300 px-2 py-2 text-xs align-middle text-right font-semibold ${colorClass}">${sign} ${formatRupiah(item.nominal)}</td>
-                            <td class="border border-gray-300 px-2 py-2 text-xs align-middle text-center">${imgHtml}</td>
-                        </tr>
-                    `;
-                });
+                    attachmentsHtml += `
+                        <div class="page-break pt-8 pb-8">
+                            <div class="border-b-2 border-gray-900 pb-3 mb-5 flex justify-between items-end">
+                                <div>
+                                    <h3 class="text-xl font-black text-gray-900 uppercase tracking-wide">Lampiran ${attachmentCount}</h3>
+                                    <p class="text-xs font-bold text-gray-600">Bukti ${isOut ? 'Pengeluaran' : 'Penambahan Saldo'} - ${currentSubMenu}</p>
+                                </div>
+                                <span class="text-xs font-bold ${isOut ? 'text-red-700' : 'text-green-700'}">${isOut ? 'PENGELUARAN' : 'SALDO MASUK'}</span>
+                            </div>
+
+                            <table class="w-full mb-5 text-sm border-collapse bg-white">
+                                <tr>
+                                    <td class="border border-gray-300 px-3 py-2 font-bold bg-gray-100 w-1/3">Tanggal</td>
+                                    <td class="border border-gray-300 px-3 py-2 font-semibold">${dateStr} ${timeStr}</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 px-3 py-2 font-bold bg-gray-100">Jenis Transaksi</td>
+                                    <td class="border border-gray-300 px-3 py-2 font-semibold">${item.type === 'IN' ? 'Penambahan Saldo' : 'Pengeluaran'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 px-3 py-2 font-bold bg-gray-100">Kategori</td>
+                                    <td class="border border-gray-300 px-3 py-2 font-semibold">${item.kategori || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 px-3 py-2 font-bold bg-gray-100">Keperluan</td>
+                                    <td class="border border-gray-300 px-3 py-2 font-semibold">${item.keperluan || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 px-3 py-2 font-bold bg-gray-100">PIC / Peminta</td>
+                                    <td class="border border-gray-300 px-3 py-2 font-semibold">${item.peminta || '-'}</td>
+                                </tr>
+                                <tr>
+                                    <td class="border border-gray-300 px-3 py-2 font-bold bg-gray-100">Nominal</td>
+                                    <td class="border border-gray-300 px-3 py-2 font-black text-lg ${colorClass}">${sign} ${formatRupiah(item.nominal)}</td>
+                                </tr>
+                            </table>
+
+                            <div class="border border-gray-300 rounded-lg bg-gray-50 p-4 text-center">
+                                <h4 class="font-black text-sm text-gray-800 mb-3 uppercase">Foto Bukti Transaksi</h4>
+                                <img src="${src}" class="max-w-full mx-auto object-contain bg-white border border-gray-200 shadow-sm rounded" style="max-height:680px;" alt="Bukti Lampiran ${attachmentCount}" loading="eager" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='https://drive.google.com/thumbnail?id=${(item.linkFoto.match(/(?:id=|\/d\/|\/file\/d\/)([-\w]{20,})/)||[])[1]||''}&sz=w1600';}else{this.onerror=null;this.src='https://placehold.co/1000x700/eeeeee/888888?text=Foto+Bukti+Tidak+Terbaca';}">
+                                <div class="mt-3" data-html2canvas-ignore>
+                                    <a href="${originalLink}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Bukti Asli
+                                    </a>
+                                </div>
+                            </div>
+                        </div>`;
+                    attachmentCount++;
+                }
+
+                detailRowsHtml += `
+                    <tr class="${rowBg}">
+                        <td class="border border-gray-300 px-2 py-2 text-[10px] align-middle text-center whitespace-nowrap">
+                            <div class="font-bold">${dateStr}</div><div class="text-gray-500">${timeStr}</div>
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2 text-[10px] align-middle text-center font-black ${colorClass}">${item.type}</td>
+                        <td class="border border-gray-300 px-2 py-2 text-[10px] align-middle">${item.kategori || '-'}</td>
+                        <td class="border border-gray-300 px-2 py-2 text-[10px] align-middle">${item.keperluan || '-'}</td>
+                        <td class="border border-gray-300 px-2 py-2 text-[10px] align-middle text-center">${item.peminta || '-'}</td>
+                        <td class="border border-gray-300 px-2 py-2 text-[10px] align-middle text-right font-bold ${colorClass} whitespace-nowrap">${sign} ${formatRupiah(item.nominal)}</td>
+                        <td class="border border-gray-300 px-2 py-2 text-[10px] align-middle text-center">${photoHtml}</td>
+                    </tr>`;
+            });
+
+            if (!filteredItems.length) {
+                detailRowsHtml = `<tr><td colspan="7" class="text-center py-8 text-gray-500 italic">Tidak ada saldo masuk atau pengeluaran pada periode ini.</td></tr>`;
             }
 
-            const selisih = totalIn - totalOut;
-            const strStart = startObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            const strEnd = endObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            const strStart = startObj.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+            const strEnd = endObj.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
 
             const previewHtml = `
                 <div class="text-center border-b-[3px] border-double border-gray-800 pb-4 mb-6">
                     <h1 class="text-3xl font-black tracking-widest text-gray-900 mb-1">BPJ GROUP</h1>
-                    <h2 class="text-lg font-bold text-gray-700">Laporan Keuangan & Pengeluaran - ${currentSubMenu}</h2>
+                    <h2 class="text-lg font-bold text-gray-700">Laporan Saldo & Pengeluaran - ${currentSubMenu}</h2>
                     <p class="text-xs text-gray-500 italic mt-1">Dicetak oleh: ${currentUser ? currentUser.nama : 'Admin'} pada ${getFormattedNow()}</p>
                 </div>
 
-                <div class="mb-6 flex justify-between items-end">
-                    <div>
-                        <h3 class="font-bold text-gray-800 underline uppercase text-sm">Periode Laporan:</h3>
-                        <p class="text-sm font-semibold text-gray-700">${strStart} &mdash; ${strEnd}</p>
-                    </div>
+                <div class="mb-6">
+                    <h3 class="font-bold text-gray-800 underline uppercase text-sm">Periode Laporan:</h3>
+                    <p class="text-sm font-semibold text-gray-700">${strStart} &mdash; ${strEnd}</p>
                 </div>
 
-                <!-- Ringkasan Table -->
-                <table class="w-full sm:w-1/2 mb-6 border-collapse">
-                    <tr>
-                        <td class="border border-gray-800 bg-gray-100 px-3 py-1 text-sm font-bold w-1/2">Total Pemasukan Modal</td>
-                        <td class="border border-gray-800 px-3 py-1 text-sm text-right font-bold text-green-700">${formatRupiah(totalIn)}</td>
-                    </tr>
-                    <tr>
-                        <td class="border border-gray-800 bg-gray-100 px-3 py-1 text-sm font-bold">Total Pengeluaran</td>
-                        <td class="border border-gray-800 px-3 py-1 text-sm text-right font-bold text-red-700">${formatRupiah(totalOut)}</td>
-                    </tr>
-                    <tr>
-                        <td class="border border-gray-800 bg-gray-200 px-3 py-1 text-sm font-black">Sisa Saldo Periode</td>
-                        <td class="border border-gray-800 bg-gray-200 px-3 py-1 text-sm text-right font-black ${selisih < 0 ? 'text-red-700' : 'text-gray-900'}">${formatRupiah(selisih)}</td>
-                    </tr>
-                </table>
-
-                <!-- Detail Table -->
-                <h4 class="font-bold text-gray-800 mb-2 text-sm uppercase">Rincian Transaksi:</h4>
-                <table class="w-full border-collapse mb-10">
-                    <thead>
-                        <tr class="bg-gray-200 text-gray-800">
-                            <th class="border border-gray-400 px-2 py-2 text-xs w-[13%]">Waktu</th>
-                            <th class="border border-gray-400 px-2 py-2 text-xs w-[7%]">Tipe</th>
-                            <th class="border border-gray-400 px-2 py-2 text-xs w-[15%]">Kategori</th>
-                            <th class="border border-gray-400 px-2 py-2 text-xs w-[25%]">Keperluan</th>
-                            <th class="border border-gray-400 px-2 py-2 text-xs w-[10%]">Peminta</th>
-                            <th class="border border-gray-400 px-2 py-2 text-xs w-[15%]">Nominal</th>
-                            <th class="border border-gray-400 px-2 py-2 text-xs w-[15%]">Bukti</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tbodyHtml}
-                    </tbody>
-                </table>
-
-                <div class="flex justify-end mt-16 text-center mb-8">
-                    <div>
-                        <p class="text-sm text-gray-700 mb-16">Mengetahui / Penanggung Jawab,</p>
-                        <p class="text-sm font-bold underline text-gray-900">( _________________________ )</p>
-                    </div>
+                <div class="bg-slate-50 border border-gray-800 rounded-xl p-4 mb-7">
+                    <h3 class="text-sm font-black uppercase tracking-wide text-gray-800 mb-3">Ringkasan Pergerakan Saldo</h3>
+                    <table class="w-full border-collapse">
+                        <tr><td class="border border-gray-700 bg-gray-100 px-3 py-2 text-sm font-bold">Sisa Saldo Sebelumnya</td><td class="border border-gray-700 px-3 py-2 text-right font-black">${formatRupiah(saldoSebelumnya)}</td></tr>
+                        <tr><td class="border border-gray-700 bg-green-50 px-3 py-2 text-sm font-bold text-green-800">Saldo Baru Masuk Periode</td><td class="border border-gray-700 px-3 py-2 text-right font-black text-green-700">+ ${formatRupiah(totalSaldoBaru)}</td></tr>
+                        <tr><td class="border border-gray-700 bg-red-50 px-3 py-2 text-sm font-bold text-red-800">Pengeluaran Periode</td><td class="border border-gray-700 px-3 py-2 text-right font-black text-red-700">- ${formatRupiah(totalPengeluaranPeriode)}</td></tr>
+                        <tr><td class="border-2 border-gray-900 bg-gray-200 px-3 py-2 text-sm font-black uppercase">Saldo Akhir</td><td class="border-2 border-gray-900 bg-gray-200 px-3 py-2 text-right text-lg font-black ${saldoAkhir < 0 ? 'text-red-700':'text-gray-900'}">${formatRupiah(saldoAkhir)}</td></tr>
+                    </table>
+                    <p class="text-[10px] text-gray-500 mt-2 italic">Rumus: Sisa saldo sebelumnya + saldo baru masuk periode - pengeluaran periode.</p>
                 </div>
-                
-                <!-- BAGIAN LAMPIRAN BUKTI (Di-render di halaman baru saat print) -->
+
+                <div class="mb-7">
+                    <div class="flex justify-between items-end mb-3 border-b-2 border-gray-800 pb-2">
+                        <div>
+                            <h3 class="text-base font-black uppercase text-gray-900">Rincian Penambahan Saldo & Pengeluaran</h3>
+                            <p class="text-[10px] text-gray-500">Menampilkan seluruh transaksi pada periode yang dipilih beserta tanggal, nominal, dan bukti foto.</p>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-600">${filteredItems.length} transaksi</span>
+                    </div>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-800">
+                                <th class="border border-gray-400 px-2 py-2 text-[10px] w-[11%]">Tanggal / Jam</th>
+                                <th class="border border-gray-400 px-2 py-2 text-[10px] w-[6%]">Tipe</th>
+                                <th class="border border-gray-400 px-2 py-2 text-[10px] w-[13%]">Kategori</th>
+                                <th class="border border-gray-400 px-2 py-2 text-[10px] w-[24%]">Keperluan</th>
+                                <th class="border border-gray-400 px-2 py-2 text-[10px] w-[10%]">PIC</th>
+                                <th class="border border-gray-400 px-2 py-2 text-[10px] w-[15%]">Nominal</th>
+                                <th class="border border-gray-400 px-2 py-2 text-[10px] w-[11%]">Foto Bukti</th>
+                            </tr>
+                        </thead>
+                        <tbody>${detailRowsHtml}</tbody>
+                    </table>
+                </div>
+
+                <div class="flex justify-end mt-10 text-center mb-8">
+                    <div><p class="text-sm text-gray-700 mb-16">Mengetahui / Penanggung Jawab,</p><p class="text-sm font-bold underline text-gray-900">( _________________________ )</p></div>
+                </div>
+
                 ${attachmentsHtml}
             `;
 
@@ -1467,15 +1581,23 @@
             document.getElementById('btn-print').classList.remove('hidden');
         }
 
-        function printReport() {
+        async function printReport() {
             const printContent = document.getElementById('report-preview-content').innerHTML;
             const printArea = document.getElementById('print-area');
-            
-            // Salin konten preview ke wadah khusus cetak
             printArea.innerHTML = printContent;
-            
-            // Cetak via browser API
-            window.print();
+
+            // Tunggu semua foto bukti selesai dimuat sebelum dialog cetak dibuka.
+            const images = Array.from(printArea.querySelectorAll('img'));
+            await Promise.all(images.map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.addEventListener('load', resolve, {once:true});
+                    img.addEventListener('error', resolve, {once:true});
+                    setTimeout(resolve, 5000);
+                });
+            }));
+
+            setTimeout(() => window.print(), 250);
         }
 
         function toggleCategoryInput() {
@@ -1488,6 +1610,273 @@
                 container.classList.add("hidden");
                 document.getElementById("expense-manual-keperluan").required = false;
             }
+        }
+
+        // ==================== SETTING & GENERATOR KODE GAS ====================
+        const SETTING_KEY = "BPJ_FINANCE_SETTINGS";
+
+        function getAppSettings() {
+            const saved = localStorage.getItem(SETTING_KEY);
+            const defaults = {
+                gasUrl: GAS_URL,
+                spreadsheetLink: DEFAULT_SPREADSHEET_LINK,
+                driveLink: DEFAULT_DRIVE_LINK,
+                spreadsheetId: DEFAULT_SPREADSHEET_ID,
+                driveId: DEFAULT_DRIVE_ID
+            };
+            try { return { ...defaults, ...(saved ? JSON.parse(saved) : {}) }; }
+            catch (_) { return defaults; }
+        }
+
+        function openSettings() {
+            if (!currentUser || currentUser.status !== "admin") {
+                showToast("Menu Setting hanya tersedia untuk Admin.", "error");
+                return;
+            }
+            const cfg = getAppSettings();
+            document.getElementById("setting-gas-url").value = cfg.gasUrl || "";
+            document.getElementById("setting-spreadsheet-link").value = cfg.spreadsheetLink || "";
+            document.getElementById("setting-drive-link").value = cfg.driveLink || "";
+            document.getElementById("setting-spreadsheet-id").value = cfg.spreadsheetId || "";
+            document.getElementById("setting-drive-id").value = cfg.driveId || "";
+            document.getElementById("gas-code-output").value = "";
+            document.getElementById("gas-code-status").innerText = "Belum dibuat";
+            document.getElementById("modal-settings").classList.remove("hidden");
+            document.getElementById("modal-settings").classList.add("flex");
+        }
+
+        function closeSettings() {
+            document.getElementById("modal-settings").classList.add("hidden");
+            document.getElementById("modal-settings").classList.remove("flex");
+        }
+
+        function extractSettingIds() {
+            const ssLink = document.getElementById("setting-spreadsheet-link").value.trim();
+            const driveLink = document.getElementById("setting-drive-link").value.trim();
+            const ssMatch = ssLink.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+            const driveMatch = driveLink.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+            if (ssMatch) document.getElementById("setting-spreadsheet-id").value = ssMatch[1];
+            if (driveMatch) document.getElementById("setting-drive-id").value = driveMatch[1];
+            if (!ssMatch && !driveMatch) showToast("ID tidak ditemukan dari link yang dimasukkan.", "error");
+            else showToast("ID Spreadsheet/Drive berhasil diperbarui.", "success");
+        }
+
+        function saveSettings() {
+            const cfg = {
+                gasUrl: document.getElementById("setting-gas-url").value.trim(),
+                spreadsheetLink: document.getElementById("setting-spreadsheet-link").value.trim(),
+                driveLink: document.getElementById("setting-drive-link").value.trim(),
+                spreadsheetId: document.getElementById("setting-spreadsheet-id").value.trim(),
+                driveId: document.getElementById("setting-drive-id").value.trim()
+            };
+            if (!cfg.spreadsheetId || !cfg.driveId) {
+                showToast("Spreadsheet ID dan Drive Folder ID wajib diisi.", "error");
+                return;
+            }
+            localStorage.setItem(SETTING_KEY, JSON.stringify(cfg));
+            showToast("Setting berhasil disimpan.", "success");
+        }
+
+        function copyGasCode() {
+            const el = document.getElementById("gas-code-output");
+            if (!el.value.trim()) {
+                generateGasCode();
+            }
+            navigator.clipboard.writeText(el.value).then(() => showToast("Kode GAS berhasil disalin.", "success"))
+                .catch(() => { el.select(); document.execCommand("copy"); showToast("Kode GAS berhasil disalin.", "success"); });
+        }
+
+        function generateGasCode() {
+            extractSettingIds();
+            const spreadsheetId = document.getElementById("setting-spreadsheet-id").value.trim();
+            const driveId = document.getElementById("setting-drive-id").value.trim();
+            const spreadsheetLink = document.getElementById("setting-spreadsheet-link").value.trim();
+            const driveLink = document.getElementById("setting-drive-link").value.trim();
+
+            if (!spreadsheetId || !driveId) {
+                showToast("Isi link/ID Spreadsheet dan Google Drive terlebih dahulu.", "error");
+                return;
+            }
+
+            const code = `/**
+ * BPJ GROUP - FINANSIAL DASHBOARD BACKEND
+ * Generated by aplikasi BPJ GROUP.
+ * Fungsi: login, dashboard, saldo, pengeluaran, edit, hapus,
+ * upload bukti ke Google Drive, dan sinkronisasi Spreadsheet.
+ *
+ * Spreadsheet: ${spreadsheetLink}
+ * Google Drive : ${driveLink}
+ */
+const SPREADSHEET_ID = "${spreadsheetId}";
+const GOOGLE_DRIVE_FOLDER_ID = "${driveId}";
+
+const SHEET_LOGIN = "Login";
+const SHEET_SALDO = "Saldo";
+const SHEET_PUSAT = "PengeluaranPusat";
+const SHEET_STUDIO = "PengeluaranStudio";
+const SHEET_LOG = "Log";
+
+function setupSheets() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const defs = {
+    [SHEET_LOGIN]: ["Nama","PIN","Status"],
+    [SHEET_SALDO]: ["Timestamp","Sub","Nominal","User","LinkFoto"],
+    [SHEET_PUSAT]: ["Timestamp","Kategori","Keperluan","NamaPeminta","Nominal","LinkFoto","User"],
+    [SHEET_STUDIO]: ["Timestamp","Kategori","Keperluan","NamaPeminta","Nominal","LinkFoto","User"],
+    [SHEET_LOG]: ["Timestamp","Nama","Aktifitas"]
+  };
+  Object.keys(defs).forEach(function(name) {
+    let sh = ss.getSheetByName(name);
+    if (!sh) sh = ss.insertSheet(name);
+    const headers = defs[name];
+    if (sh.getLastRow() === 0) sh.appendRow(headers);
+    else if (sh.getLastColumn() < headers.length) {
+      sh.getRange(1,1,1,headers.length).setValues([headers]);
+    }
+    sh.setFrozenRows(1);
+  });
+  return ss;
+}
+
+function getSheet_(name) {
+  return SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(name);
+}
+
+function json_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function rows_(sheet) {
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  return sheet.getRange(2,1,sheet.getLastRow()-1,sheet.getLastColumn()).getValues();
+}
+
+function formatDate_(v) {
+  if (v instanceof Date) {
+    return Utilities.formatDate(v, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
+  }
+  return String(v || "");
+}
+
+function uploadToDrive_(fileData, fileName, mimeType) {
+  if (!fileData) return "";
+  const folder = DriveApp.getFolderById(GOOGLE_DRIVE_FOLDER_ID);
+  const bytes = Utilities.base64Decode(fileData);
+  const blob = Utilities.newBlob(bytes, mimeType || "image/jpeg", fileName || ("bukti_" + Date.now() + ".jpg"));
+  const file = folder.createFile(blob);
+  try {
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (sharingErr) {
+    // Kebijakan Google Workspace dapat melarang sharing publik.
+  }
+  return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+}
+
+function appendLog_(nama, aktifitas) {
+  getSheet_(SHEET_LOG).appendRow([new Date(), nama || "", aktifitas || ""]);
+}
+
+function doGet(e) {
+  try {
+    setupSheets();
+    const action = String((e && e.parameter && e.parameter.action) || "");
+
+    if (action === "login") {
+      const username = String(e.parameter.username || "").trim().toLowerCase();
+      const pin = String(e.parameter.pin || "").trim();
+      const data = rows_(getSheet_(SHEET_LOGIN));
+      const found = data.find(r => String(r[0] || "").trim().toLowerCase() === username && String(r[1] || "").trim() === pin);
+      if (!found) return json_({success:false, message:"Nama atau PIN salah!"});
+      return json_({success:true, user:{nama:String(found[0]), status:String(found[2] || "pegawai")}});
+    }
+
+    if (action === "get_dashboard_data") {
+      const saldo = rows_(getSheet_(SHEET_SALDO)).map(r => ({
+        timestamp:formatDate_(r[0]), sub:String(r[1] || ""), nominal:Number(r[2] || 0), user:String(r[3] || ""), linkFoto:String(r[4] || "")
+      }));
+      const mapExpense = r => ({
+        timestamp:formatDate_(r[0]), kategori:String(r[1] || ""), keperluan:String(r[2] || ""),
+        namaPeminta:String(r[3] || ""), nominal:Number(r[4] || 0), linkFoto:String(r[5] || ""), user:String(r[6] || "")
+      });
+      return json_({
+        success:true,
+        saldo:saldo,
+        pengeluaranPusat:rows_(getSheet_(SHEET_PUSAT)).map(mapExpense),
+        pengeluaranStudio:rows_(getSheet_(SHEET_STUDIO)).map(mapExpense)
+      });
+    }
+
+    return json_({success:true, message:"BPJ GROUP GAS aktif", spreadsheetId:SPREADSHEET_ID, driveFolderId:GOOGLE_DRIVE_FOLDER_ID});
+  } catch (err) {
+    return json_({success:false, message:err.message});
+  }
+}
+
+function doPost(e) {
+  try {
+    setupSheets();
+    const p = JSON.parse(e.postData.contents || "{}");
+    const action = String(p.action || "");
+    const user = String(p.user || "");
+
+    if (action === "tambah_saldo") {
+      const link = uploadToDrive_(p.fileData, p.fileName, p.fileMime);
+      getSheet_(SHEET_SALDO).appendRow([p.timestamp || new Date(), p.sub || "", Number(p.nominal || 0), user, link]);
+      appendLog_(user, "Menambah saldo " + p.sub + " sebesar Rp " + Number(p.nominal || 0).toLocaleString("id-ID"));
+      return json_({success:true, linkFoto:link});
+    }
+
+    if (action === "tambah_pengeluaran") {
+      const sheet = p.sub === "BPJSTUDIO" ? getSheet_(SHEET_STUDIO) : getSheet_(SHEET_PUSAT);
+      const link = uploadToDrive_(p.fileData, p.fileName, p.fileMime);
+      sheet.appendRow([p.timestamp || new Date(), p.kategori || "", p.keperluan || "", p.namaPeminta || "", Number(p.nominal || 0), link, user]);
+      appendLog_(user, "Mencatat pengeluaran " + p.sub + ": " + (p.keperluan || ""));
+      return json_({success:true, linkFoto:link});
+    }
+
+    if (action === "edit_pengeluaran") {
+      const sheet = p.sub === "BPJSTUDIO" ? getSheet_(SHEET_STUDIO) : getSheet_(SHEET_PUSAT);
+      const row = Number(p.index) + 2;
+      if (row < 2 || row > sheet.getLastRow()) throw new Error("Index pengeluaran tidak valid.");
+      sheet.getRange(row,5).setValue(Number(p.nominal || 0));
+      if (p.fileData) {
+        const link = uploadToDrive_(p.fileData, p.fileName, p.fileMime);
+        sheet.getRange(row,6).setValue(link);
+      }
+      appendLog_(user, "Memperbarui pengeluaran " + p.sub + " index " + p.index);
+      return json_({success:true});
+    }
+
+    if (action === "hapus_pengeluaran") {
+      const sheet = p.sub === "BPJSTUDIO" ? getSheet_(SHEET_STUDIO) : getSheet_(SHEET_PUSAT);
+      const row = Number(p.index) + 2;
+      if (row < 2 || row > sheet.getLastRow()) throw new Error("Index pengeluaran tidak valid.");
+      sheet.deleteRow(row);
+      appendLog_(user, "Menghapus pengeluaran " + p.sub + " index " + p.index);
+      return json_({success:true});
+    }
+
+    return json_({success:false, message:"Action tidak dikenali."});
+  } catch (err) {
+    return json_({success:false, message:err.message});
+  }
+}
+
+function authorizeAndSetup() {
+  setupSheets();
+  SpreadsheetApp.openById(SPREADSHEET_ID);
+  DriveApp.getFolderById(GOOGLE_DRIVE_FOLDER_ID);
+  return "Setup selesai. Spreadsheet dan Google Drive dapat diakses.";
+}
+`;
+            document.getElementById("gas-code-output").value = code;
+            document.getElementById("gas-code-status").innerText = "Kode lengkap berhasil dibuat " + new Date().toLocaleTimeString("id-ID");
+            localStorage.setItem(SETTING_KEY, JSON.stringify({
+                gasUrl: document.getElementById("setting-gas-url").value.trim(),
+                spreadsheetLink, driveLink, spreadsheetId, driveId
+            }));
+            showToast("Kode GAS lengkap berhasil dibuat.", "success");
         }
 
         // ==================== UTILITY FUNCTIONS ====================
